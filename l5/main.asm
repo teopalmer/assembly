@@ -3,10 +3,7 @@ STK SEGMENT PARA STACK 'STACK'
 STK ENDS
 
 DSEG SEGMENT WORD 'DATA'
-	n	db ? ;rows
-	m	db ? ;columns
-	nmax	db 0; maximum
-	nmin	db 0; minimum
+	a	db ? ; command task
 	array	db 9*9 dup ('-')
 	crlf	db 10, 13, '$'
 	msgMenu	db 'Main Menu:$'
@@ -28,15 +25,6 @@ entry:
 	int 	21h
 	ret
 
-input:	
-	ret
-
-bin:	
-	ret	
-
-hex:
-	ret	
-
 outstr:
 	mov ah, 09h
 	int 21h
@@ -46,6 +34,17 @@ entryout:
 	lea dx, crlf
 	call outstr
 	ret
+
+input:	
+	lea 	dx, msgIn
+	call 	outstr
+	ret
+
+bin:	
+	ret	
+
+hex:
+	ret	
 
 main:	
 	mov 	ax, DSEG
@@ -67,9 +66,17 @@ main:
 	call 	outstr
 	call	entryout
 
+	mov	ah, 1h
+	int 	21h
+	
+	
+
 exitprog:
 	mov 	ax, 4c00h
 	int 	21h
+	mov	a, dh
+
 	
+
 CSEG1 ENDS
 END main
