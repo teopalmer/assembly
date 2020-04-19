@@ -10,11 +10,20 @@ DSEG SEGMENT WORD 'DATA'
 	msgIn	db '1. Enter signed octal number$'
 	msgBin	db '2. Get unsigned binary number$'
 	msgHex	db '3. Get unsigned hexadecimal number$'
+	msgEnd	db '4. Exit$'
 	DB	100 DUP(0)
+	actions dw insoctal, outubin, outuhex, exit
 DSEG ENDS
 
 CSEG1 SEGMENT PARA PUBLIC 'CODE'
 	ASSUME CS:CSEG1, DS:DSEG, SS:STK
+
+getdigit: 		;one digit input
+	mov 	ah, 1h
+	int 	21h
+	sub 	dl, '0'
+	mov 	si, dl
+	ret
 
 entry:
 	xor	dx, dx
@@ -25,57 +34,47 @@ entry:
 	int 	21h
 	ret
 
-outstr:
-	mov ah, 09h
-	int 21h
-	ret
-
 entryout:
-	lea dx, crlf
-	call outstr
-	ret
-
-input:	
-	lea 	dx, msgIn
+	lea 	dx, crlf
 	call 	outstr
 	ret
 
-bin:	
-	ret	
+outstr:
+	mov 	ah, 09h
+	int 	21h
+	call 	entryout
+	ret
 
-hex:
-	ret	
+displaymenu:
+	lea 	dx, msgMenu
+	call 	outstr
+
+	lea 	dx, msgIn
+	call 	outstr
+
+	lea 	dx, msgBin
+	call 	outstr
+
+	lea 	dx, msgHex
+	call 	outstr
+
+	lea 	dx, msgHex
+	call 	outstr
+
+	lea 	dx, msgEnd
+	call 	outstr
+	ret
 
 main:	
 	mov 	ax, DSEG
 	mov 	ds, ax
 
-	lea 	dx, msgMenu
-	call 	outstr
-	call	entryout
-
-	lea 	dx, msgIn
-	call 	outstr
-	call	entryout
-
-	lea 	dx, msgBin
-	call 	outstr
-	call	entryout
-
-	lea 	dx, msgHex
-	call 	outstr
-	call	entryout
-
-	mov	ah, 1h
-	int 	21h
-	
-	
+	call 	displaymenu
+	call	getdigit
 
 exitprog:
 	mov 	ax, 4c00h
 	int 	21h
-	mov	a, dh
-
 	
 
 CSEG1 ENDS
