@@ -1,28 +1,39 @@
+EXTRN insoctal: near
+EXTRN outubin: near
+EXTRN outuhex: near
+
 STK SEGMENT PARA STACK 'STACK'
 	DB	100 DUP (0)
 STK ENDS
 
-DSEG SEGMENT WORD 'DATA'
+DSEG SEGMENT PARA PUBLIC 'DATA'
 	a	db ? ; command task
-	array	db 9*9 dup ('-')
 	crlf	db 10, 13, '$'
 	msgMenu	db 'Main Menu:$'
 	msgIn	db '1. Enter signed octal number$'
 	msgBin	db '2. Get unsigned binary number$'
 	msgHex	db '3. Get unsigned hexadecimal number$'
-	msgEnd	db '4. Exit$'
+	msgEnd	db '0. Exit$'
+	actions dw exit, insoctal, outubin, outuhex
 	DB	100 DUP(0)
-	actions dw insoctal, outubin, outuhex, exit
 DSEG ENDS
 
 CSEG1 SEGMENT PARA PUBLIC 'CODE'
 	ASSUME CS:CSEG1, DS:DSEG, SS:STK
 
-getdigit: 		;one digit input
+exit proc
+	mov 	ax, 4c00h
+	int 	21h
+	ret
+exit endp
+
+getdigit: 		
 	mov 	ah, 1h
 	int 	21h
-	sub 	dl, '0'
-	mov 	si, dl
+	sub 	al, '0'
+	mov 	cl, 2
+	mul	cl
+	mov 	si, ax
 	ret
 
 entry:
@@ -42,35 +53,40 @@ entryout:
 outstr:
 	mov 	ah, 09h
 	int 	21h
-	call 	entryout
 	ret
 
 displaymenu:
 	lea 	dx, msgMenu
 	call 	outstr
+	call	entry
 
 	lea 	dx, msgIn
 	call 	outstr
+	call	entry
 
 	lea 	dx, msgBin
 	call 	outstr
+	call	entry
 
 	lea 	dx, msgHex
 	call 	outstr
-
-	lea 	dx, msgHex
-	call 	outstr
+	call	entry
 
 	lea 	dx, msgEnd
 	call 	outstr
+	call	entry
 	ret
 
 main:	
 	mov 	ax, DSEG
 	mov 	ds, ax
 
+progwork:
 	call 	displaymenu
-	call	getdigit
+	call 	getdigit
+	call 	entryout
+	call	actions[si]
+	jmp	progwork
 
 exitprog:
 	mov 	ax, 4c00h
