@@ -1,4 +1,6 @@
 PUBLIC insoctal
+PUBLIC number
+PUBLIC sign
 
 DSEG SEGMENT PARA PUBLIC 'DATA'
 	p	db 1
@@ -27,64 +29,25 @@ getchar:
 	int	21h
 	ret
 
-numout:
-	lea	dx, msgOutO
-	call 	outstr
-	call 	entryout
-	mov 	dx, cx
-	;call 	outstr
-	ret
-
-ShowOct proc
-        push    ax
-        push    cx
-        push    dx
- 
-        ; Начинаем перевод числа AX в строку
-        mov    cl,      ((16-1)/3)*3    ; 16-битный регистр, будем выводить по 3 бита (0..7)
-        mov    dx,      ax              ; Сохраняем число в DX
- 
-@@Repeat:
- 
-        mov    ax,      dx              ; Восстанавливаем число в AX
-        shr    ax,      cl              ; Сдвигаем на CL бит вправо (делим на 8*i)
-        and    al,      07h             ; Получаем в AL цифру 0..7 (остаток от деления на 8)
-        add    al,      '0'             ; Получаем в AL символ цифры
- 
-        int    29h                      ; Выводим символ в AL на экран
-        sub    cl,      3               ; Уменьшаем CL на 3 для следующей цифры
-        jnc    @@Repeat                 ; Если знаковый CL >= 0, то повторяем
- 
-        pop     dx
-        pop     cx
-        pop     ax
-        ret
-ShowOct endp
-
-
 getsigned:
 	call 	getchar
 	mov	sign, al
 num:
-	call	getchar
-	cmp     al, '0'  
-    	jb      signwork  
-    	cmp     al, '7'  
-    	ja      signwork  
-	sub     al, '0'  
-    	mul	p
-	add	cx, ax
-	mov	al, p
-	mov	dx, 10
-	mul 	dx
-    	jmp     num
+	mov	ah, 1
+        int	21h
+        cmp	al, 13
+        je	exitnum
+        mov	cl, al
+        mov	ax, 8
+        mul	bx
+        mov	bx, ax
+        mov	ch, 0
+        sub	cl, '0'
+        add	bx, cx
+        jmp num
 
-signwork:
-	call	numout	
-	xor 	bx, bx
-	mov 	bl, sign
-	
-exit:
+exitnum:
+	mov	number, bx
 	ret
 	
 
@@ -94,7 +57,6 @@ insoctal proc near
 	call	outstr
 	call 	entryout
 	call 	getsigned
-	call 	ShowOct
 	
 	ret
 insoctal endp

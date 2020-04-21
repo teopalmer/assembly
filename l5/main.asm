@@ -1,13 +1,14 @@
 EXTRN insoctal: near
 EXTRN outubin: near
 EXTRN outuhex: near
+EXTRN number: word
+EXTRN sign: byte
 
 STK SEGMENT PARA STACK 'STACK'
 	DB	100 DUP (0)
 STK ENDS
 
 DSEG SEGMENT PARA PUBLIC 'DATA'
-	a	db ? ; command task
 	crlf	db 10, 13, '$'
 	msgMenu	db 'Main Menu:$'
 	msgIn	db '1. Enter signed octal number$'
@@ -80,11 +81,13 @@ displaymenu:
 main:	
 	mov 	ax, DSEG
 	mov 	ds, ax
+	mov 	cx, 12
 
 progwork:
 	call 	displaymenu
 	call 	getdigit
 	call 	entryout
+	mov 	cx, number
 	call	actions[si]
 	jmp	progwork
 
