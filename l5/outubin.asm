@@ -9,8 +9,6 @@ DSEG SEGMENT PARA PUBLIC 'DATA'
 	binnum	dw 0	
 	crlf	db 10, 13, '$'
 	msgOut	db 'Number: $'
-	HexTabl  db     '0123456789abcdef'
-	asHex    db     '00', '$'
 DSEG ENDS
 
 CSEG1 SEGMENT PARA PUBLIC 'CODE'
@@ -39,14 +37,14 @@ printnum endp
 
 
 numtobin: ;number in bl
-	mov bx, number
+	mov 	bx, number
 	cmp	sign, '-'
 	jne	outnum
 	not 	bx
 	inc	bx
 outnum:
 	mov cx, 16
-	ub_out_cycle:
+	outloop:
 		mov ax, '0'
 		shl bx, 1
 		adc al, ah
@@ -54,7 +52,7 @@ outnum:
         mov ah, 2
         mov dl, al
         int 21h
-	loop ub_out_cycle
+	loop outloop
 	ret
 
 

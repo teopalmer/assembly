@@ -5,47 +5,53 @@ EXTRN sign:byte
 DSEG SEGMENT PARA PUBLIC 'DATA'
 	crlf	db 10, 13, '$'
 	msgOut	db 'Converted binary number: $'
-	HexTabl  db     '0123456789abcdef'
-	asHex    db     '00', '$'
 DSEG ENDS
 
 CSEG1 SEGMENT PARA PUBLIC 'CODE'
 	ASSUME CS:CSEG1, DS:DSEG
 
 
-ShowHex proc
-        push 	ax
-	
-        mov     di, OFFSET asHex
-        mov     cx, ax
-        and     ax, 000fh
-        mov     bx, OFFSET HexTabl
-        xlat
-        mov     [di+1], al
+show proc near
+        push    ax
+        push    cx
+        push    dx
  
-        mov     ax, cx
-        and     ax, 00f0h
-        mov     cl, 4
-        shr     ax, cl
-        xlat
-        mov     [di], al
+        mov    cl,      12
+        xchg   dx,      ax
  
-        mov     ah, 09h
-        mov     dx, OFFSET asHex
-        int     21h
-        pop	ax
+loopnum:
+ 
+        mov    ax,      dx
+        shr    ax,      cl
+        and    al,      0Fh
+        add    al,      '0'
+        cmp    al,      '9'
+        jbe    isdigit
+        add    al,      'A'-('9'+1)
+ 
+isdigit:
+ 
+        int    29h                      
+        sub    cl,      4
+        jnc    loopnum
+ 
+        pop     dx
+        pop     cx
+        pop     ax
         ret
-ShowHex ENDP
+Show endp
 
 outuhex proc near
 	mov	ah, 2h
 	mov 	dl, sign
 	int 	21h
 	mov	ax, number
-        xchg    al, ah
-        call    ShowHex
-        xchg    al, ah
-        call    ShowHex
+        call    show
+
+	mov	ah, 09h
+	lea 	dx, crlf
+	int	21h
+	ret
 outuhex endp
 
 CSEG1 ENDS

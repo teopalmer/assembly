@@ -13,7 +13,7 @@ DSEG SEGMENT PARA PUBLIC 'DATA'
 	msgMenu	db 'Main Menu:$'
 	msgIn	db '1. Enter signed octal number$'
 	msgBin	db '2. Get unsigned binary number$'
-	msgHex	db '3. Get unsigned hexadecimal number$'
+	msgHex	db '3. Get signed hexadecimal number$'
 	msgEnd	db '0. Exit$'
 	actions dw exit, insoctal, outubin, outuhex
 	DB	100 DUP(0)
